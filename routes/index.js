@@ -35,7 +35,7 @@ router.get('/set', function (req, res, next) {
                 return console.error(err);
             }
             console.log("数据写入成功！");
-            fs.readFile('/var/a.json', function (err, data) {
+            fs.readFile('/home/projects/music-online/public/json/music.json', function (err, data) {
                 if (err) {
                     return console.error(err);
                 }
