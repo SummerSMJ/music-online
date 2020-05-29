@@ -27,8 +27,7 @@ router.post('/set', function (req, res, next) {
     req.on('data', function (chunk) {
         body += chunk;
     });
-    console.log("22222！");
-
+    console.log("22222！",body);
 
     req.on('end', function () {
         body = JSON.stringify(querystring.parse(body));
@@ -48,7 +47,7 @@ router.post('/set', function (req, res, next) {
         });
         res.end();
     });
-
+    console.log("44444！");
 });
 
 module.exports = router;
