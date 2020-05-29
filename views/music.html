@@ -94,7 +94,6 @@
             music.musicId = playingId;
             music.musicName = playingName;
             clearInterval(interval);
-            console.log(123)
             $.ajax({
                 type: "POST",
                 url: "/music-online/set",
@@ -102,6 +101,9 @@
                 success: function (data) {
                     console.log(data);
                     timer();
+                },
+                error:function (e) {
+                    console.log(e);
                 }
             });
         }
@@ -172,7 +174,6 @@
                         } else {
                             playMusic(data.musicId, data.musicName);
                         }
-
                     }
                 });
             }

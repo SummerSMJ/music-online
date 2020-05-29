@@ -11,7 +11,7 @@ router.get('/', function (req, res, next) {
 router.post('/json', function (request, response, next) {
     fs.readFile('/home/projects/music-online/public/json/music.json', function (err, data) {
         if (err) {
-            console.log(err);
+            // console.log(err);
             response.writeHead(404, {'Content-Type': 'text/html'});
         } else {
             response.writeHead(200, {'Content-Type': 'text/html'});
@@ -22,21 +22,15 @@ router.post('/json', function (request, response, next) {
 });
 
 router.post('/set', function (req, res, next) {
-    console.log("11111！");
-    var body = "";
-    req.on('data', function (chunk) {
-        body += chunk;
-    });
-    console.log("22222！",body);
 
-    req.on('end', function () {
-        body = JSON.stringify(querystring.parse(body));
-        res.writeHead(200, {'Content-Type': 'text/html; charset=utf8'});
-        console.log("333333！");
-        fs.writeFile('/home/projects/music-online/public/json/music.json', body, function (err) {
-            if (err) {
-                return console.error(err);
-            }
+    var body = req.body;
+    console.log("111111",body);
+    //body = JSON.stringify(querystring.parse(body));
+    // console.log("222222",body);
+    fs.writeFile('/home/projects/music-online/public/json/music.json', body, function (err) {
+        if (err) {
+            console.error(err);
+        } else {
             console.log("数据写入成功！");
             fs.readFile('/home/projects/music-online/public/json/music.json', function (err, data) {
                 if (err) {
@@ -44,10 +38,10 @@ router.post('/set', function (req, res, next) {
                 }
                 console.log("文件数据: " + data.toString());
             });
-        });
-        res.end();
+        }
     });
-    console.log("44444！");
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end();
 });
 
 module.exports = router;
