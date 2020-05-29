@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Summer-Online</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+
+<center>
+    <div>
+        <p>添加网易云音乐到本地</p>
+        名称:<input id="musicName"/>
+        id:<input id="musicId"/>
+        <button onclick="addMusic()">添加</button>
+    </div>
+    <div>
+        <p>正在播放:<span id="playing_name"></span></p>
+        <audio id="audio" controls onended="nextMusic()">
+            您的浏览器不支持 audio 元素。
+        </audio>
+    </div>
+    <hr/>
+    <p>列表
+        &nbsp;&nbsp;&nbsp;&nbsp; <a href="javascript:0" onclick="clearMusic()">清空</a>
+        &nbsp;&nbsp;&nbsp;&nbsp; <a href="javascript:0" onclick="locationPlay()">本地播放</a>
+        &nbsp;&nbsp;&nbsp;&nbsp; <a href="javascript:0" onclick="onlinePlay()">同步播放</a>
+    </p>
+    <div id="music_list">
+
+    </div>
+</center>
+
+</body>
+<script>
+    // https://www.apicp.cn/API/wyy/api.php?id=277382
+    let musicList = localStorage.getItem("musicList");
+    let onlineMusicList = localStorage.getItem("onlineMusicList");
+    let musicListJson = [];
+    let playId = "";
+    let playType = 0;
+    let playingName = "";
+    let playingId = "";
+
+    if (!musicList) {
+        musicListJson.push({"musicName": "方圆几里 - (微电影《最熟悉的陌生人》主题曲)", "musicId": "27955658"});
+        musicListJson.push({"musicName": "演员", "musicId": "32507038"});
+        musicListJson.push({"musicName": "刚刚好", "musicId": "415792881"});
+        musicListJson.push({"musicName": "绅士", "musicId": "32192436"});
+        musicListJson.push({"musicName": "认真的雪", "musicId": "169185"});
+        musicListJson.push({"musicName": "你还要我怎样", "musicId": "27955653"});
+        musicListJson.push({"musicName": "暧昧", "musicId": "471385043"});
+        musicListJson.push({"musicName": "你还要我怎样", "musicId": "27955653"});
+        localStorage.setItem("musicList", JSON.stringify(musicListJson));
+    } else {
+        musicListJson = JSON.parse(musicList);
+    }
+    loadData();
+
+    function loadData() {
+        let html = "";
+        for (let i = 0; i < musicListJson.length; i++) {
+            let name = musicListJson[i].musicName;
+            html = html + "<p>" + musicListJson[i].musicName + "&nbsp;&nbsp;&nbsp;&nbsp;<a href='javascript:(0)' onclick='playMusic(\"" + musicListJson[i].musicId + "\",\"" + name + "\")'>点击播放</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='javascript:(0)' onclick='deleteMusic(\"" + musicListJson[i].musicId + "\")'>删除</a></p>";
+        }
+        document.getElementById("music_list").innerHTML = html;
+    }
+
+    function addMusic() {
+        let musicName = document.getElementById("musicName").value;
+        let musicId = document.getElementById("musicId").value;
+        if (musicName && musicId) {
+            let music = {};
+            music.musicName = musicName;
+            music.musicId = musicId;
+            musicListJson.push(music);
+            localStorage.setItem("musicList", JSON.stringify(musicListJson));
+            loadData();
+        } else {
+            alert('请检查输入');
+        }
+    }
+
+    function playMusic(musicId, musicName) {
+        if (playId === musicId || musicId===undefined || musicName === undefined) {
+            return;
+        }
+
+        playingId = musicId;
+        playingName = musicName;
+
+        if (playType === 1) {
+            let music = {};
+            music.musicId = playingId;
+            music.musicName = playingName;
+            clearInterval(interval);
+            console.log(123)
+            $.ajax({
+                type: "POST",
+                url: "/music-online/set",
+                data: music,
+                success: function (data) {
+                    console.log(data);
+                    timer();
+                }
+            });
+        }
+
+        playId = musicId;
+        document.getElementById("playing_name").innerText = musicName;
+        document.getElementById('audio').src = "https://www.apicp.cn/API/wyy/api.php?id=" + musicId;
+        let audio = document.getElementById('audio');
+        audio.load();
+        audio.play();
+    }
+
+    function deleteMusic(musicId) {
+        let newMusicList = [];
+        for (let musicListJsonElement of musicListJson) {
+            if (musicId !== musicListJsonElement.musicId) {
+                newMusicList.push(musicListJsonElement);
+            }
+        }
+        musicListJson = newMusicList;
+        localStorage.setItem("musicList", JSON.stringify(musicListJson));
+        loadData();
+    }
+
+    function clearMusic() {
+        localStorage.clear();
+    }
+
+    function nextMusic() {
+        let random = randomNum(0, musicListJson.length - 1);
+        playMusic(musicListJson[random].musicId, musicListJson[random].musicName);
+    }
+
+    //生成从minNum到maxNum的随机数
+    function randomNum(minNum, maxNum) {
+        switch (arguments.length) {
+            case 1:
+                return parseInt(Math.random() * minNum + 1, 10);
+                break;
+            case 2:
+                return parseInt(Math.random() * (maxNum - minNum + 1) + minNum, 10);
+                //或者 Math.floor(Math.random()*( maxNum - minNum + 1 ) + minNum );
+                break;
+            default:
+                return 0;
+                break;
+        }
+    }
+
+    function locationPlay() {
+        playType = 0;
+    }
+
+    let interval;
+
+    function timer() {
+        clearInterval(interval);
+        interval = setInterval(function () {
+            if (playType === 1) {
+                $.ajax({
+                    type: "POST",
+                    url: "/music-online/json",
+                    success: function (data) {
+                        data = JSON.parse(data);
+                        console.log(data);
+                        if (!data) {
+
+                        } else {
+                            playMusic(data.musicId, data.musicName);
+                        }
+
+                    }
+                });
+            }
+        }, 1000);
+    }
+
+    function onlinePlay() {
+        playType = 1;
+        timer();
+    }
+
+</script>
+</html>
