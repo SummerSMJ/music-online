@@ -8,7 +8,7 @@ router.get('/', function (req, res, next) {
     res.render('music', {title: 'Express'});
 });
 
-router.get('/json', function (request, response, next) {
+router.post('/json', function (request, response, next) {
     fs.readFile('/home/projects/music-online/public/json/music.json', function (err, data) {
         if (err) {
             console.log(err);
@@ -21,7 +21,7 @@ router.get('/json', function (request, response, next) {
     });
 });
 
-router.get('/set', function (req, res, next) {
+router.post('/set', function (req, res, next) {
     var body = "";
     req.on('data', function (chunk) {
         body += chunk;
