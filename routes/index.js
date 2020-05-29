@@ -22,14 +22,18 @@ router.post('/json', function (request, response, next) {
 });
 
 router.post('/set', function (req, res, next) {
+    console.log("11111！");
     var body = "";
     req.on('data', function (chunk) {
         body += chunk;
     });
+    console.log("22222！");
+
 
     req.on('end', function () {
         body = JSON.stringify(querystring.parse(body));
         res.writeHead(200, {'Content-Type': 'text/html; charset=utf8'});
+        console.log("333333！");
         fs.writeFile('/home/projects/music-online/public/json/music.json', body, function (err) {
             if (err) {
                 return console.error(err);
