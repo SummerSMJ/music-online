@@ -24,9 +24,10 @@ router.post('/json', function (request, response, next) {
 router.post('/set', function (req, res, next) {
 
     var body = req.body;
-    console.log("111111",body);
-    body = JSON.stringify(querystring.parse(body));
-    // console.log("222222",body);
+    let music = {};
+    music.musicId = body.musicId;
+    music.musicName = body.musicName;
+    body = JSON.stringify(music);
     fs.writeFile('/home/projects/music-online/public/json/music.json', body, function (err) {
         if (err) {
             console.error(err);
